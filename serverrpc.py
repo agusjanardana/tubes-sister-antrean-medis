@@ -48,10 +48,10 @@ DATABASE = {
             "nama": "Agus",
             "tanggal_lahir": "12-12-2000",
             "no_rekam_medis": '1',
+            "antrian": ''
         },
     }
 }
-
 
 WAKTU_ANTRIAN = 1
 
@@ -82,24 +82,45 @@ with SimpleXMLRPCServer(("127.0.0.1", 8000),
             del dataRegis["selected_rs"]
             DATABASE["user"][dataRegis["no_rekam_medis"]] = dataRegis
             currentUser = dataRegis
-        else:
+        elif dataRegis["no_rekam_medis"] in DATABASE["user"].keys():
             currentUser = DATABASE["user"][dataRegis["no_rekam_medis"]]
+        else:
+            return "\nERROR : User tidak ditemukan\n"
 
-        rs = DATABASE["RS"][selected_rs]
+        if selected_rs in DATABASE["RS"].keys():
+            rs = DATABASE["RS"][selected_rs]
+        else:
+            return "\nERROR : RS tidak ditemukan\n"
+
         rs["queue"].put(currentUser)
         now = datetime.datetime.now()
         now_plus = now + \
             datetime.timedelta(minutes=WAKTU_ANTRIAN * rs['queue'].qsize())
         now_plus_formated = now_plus.strftime("%H:%M:%S")
+
+        currentUser["antrian"] = f"Sekarang anda sendang mengantri pada {rs['nama']} dengan nomor antrian {rs['queue'].qsize()}. Estimasi {now_plus_formated}"
+        DATABASE["user"][currentUser["no_rekam_medis"]] = currentUser
+        print(DATABASE["user"][currentUser["no_rekam_medis"]])
         return f"Antrian kamu di {rs['nama']} sudah terdaftar. Nomor Antrian {rs['queue'].qsize()}. Estimasi {now_plus_formated}. (Nomor Rekam Medis anda adalah {currentUser['no_rekam_medis']})"
 
     def get_queue_size():
-        for _, value in DATABASE["RS"].items():
-            print(f"Antrian di RS {value['nama']} : {value['queue'].qsize()}")
+        rs_text = ""
+        for idx, value in DATABASE["RS"].items():
+            rs_text += f"{idx}. {value['nama']} : \nJumlah Antrian {value['queue'].qsize()}\n\n"
+        return rs_text
+
+    def get_user_object(no_rekam_medis):
+        if no_rekam_medis in DATABASE["user"].keys():
+            return DATABASE["user"][no_rekam_medis]
+        else:
+            return None
 
     def get_detail_user(no_rekam_medis):
-        data = DATABASE["user"][no_rekam_medis]
-        return f"Nama : {data['nama']} \nTanggal Lahir : {data['tanggal_lahir']} \nNomor Rekam Medis : {data['no_rekam_medis']}"
+        if no_rekam_medis in DATABASE["user"].keys():
+            user = DATABASE["user"][no_rekam_medis]
+            return f"Nama : {user['nama']}\nTanggal Lahir : {user['tanggal_lahir']}\nNomor Rekam Medis : {user['no_rekam_medis']}"
+        else:
+            return "\nERROR : User tidak ditemukan\n"
 
     def get_list_rs():
         rs_text = ""
@@ -112,6 +133,7 @@ with SimpleXMLRPCServer(("127.0.0.1", 8000),
     server.register_function(get_queue_size, 'get_queue_size')
     server.register_function(get_detail_user, 'get_detail_user')
     server.register_function(get_list_rs, 'get_list_rs')
+    server.register_function(get_user_object, 'get_user_object')
 
     # Jalankan server
     print("Server Registrasi Medis berjalan...")
