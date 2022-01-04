@@ -101,7 +101,12 @@ with SimpleXMLRPCServer(("127.0.0.1", 8000),
         currentUser["antrian"] = f"Sekarang anda sendang mengantri pada {rs['nama']} dengan nomor antrian {rs['queue'].qsize()}. Estimasi {now_plus_formated}"
         DATABASE["user"][currentUser["no_rekam_medis"]] = currentUser
         print(DATABASE["user"][currentUser["no_rekam_medis"]])
-        return f"Antrian kamu di {rs['nama']} sudah terdaftar. Nomor Antrian {rs['queue'].qsize()}. Estimasi {now_plus_formated}. (Nomor Rekam Medis anda adalah {currentUser['no_rekam_medis']})"
+        result = {
+            "no_rekam_medis": currentUser["no_rekam_medis"],
+            "rs": rs["nama"],
+            "antrian": currentUser["antrian"]
+        }
+        return result
 
     def get_queue_size():
         rs_text = ""
@@ -118,7 +123,10 @@ with SimpleXMLRPCServer(("127.0.0.1", 8000),
     def get_detail_user(no_rekam_medis):
         if no_rekam_medis in DATABASE["user"].keys():
             user = DATABASE["user"][no_rekam_medis]
-            return f"Nama : {user['nama']}\nTanggal Lahir : {user['tanggal_lahir']}\nNomor Rekam Medis : {user['no_rekam_medis']}"
+            if not "antrian" in user.keys():
+                return f"Nama : {user['nama']}\nTanggal Lahir : {user['tanggal_lahir']}\nNomor Rekam Medis : {user['no_rekam_medis']}"
+            else:
+                return f"Nama : {user['nama']}\nTanggal Lahir : {user['tanggal_lahir']}\nNomor Rekam Medis : {user['no_rekam_medis']}\n{user['antrian']}"
         else:
             return "\nERROR : User tidak ditemukan\n"
 

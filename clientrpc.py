@@ -4,7 +4,8 @@ import os
 import time
 
 # buat stub (proxy) untuk client
-s = xmlrpc.client.ServerProxy('http://127.0.0.1:8000', allow_none=True)
+s = xmlrpc.client.ServerProxy(
+    'https://3e10-36-65-206-127.ngrok.io', allow_none=True)
 
 
 def clearTerminal():
@@ -39,12 +40,9 @@ def menuRegistrasi():
     elif regisChoice == "n":
         clearTerminal()
         headerMenuRegistrasi()
-        print("Masukkan Tanggal Lahir : ")
-        tanggal_lahir = input()
-        print("Masukkan Nama : ")
-        nama = input()
-        print("Masukkan Pilihan RS : ")
-        poliklinik = input()
+        tanggal_lahir = input("Masukkan Tanggal Lahir : ")
+        nama = input("Masukkan Nama : ")
+        poliklinik = input("Masukkan Pilihan RS : ")
         data = {
             "tanggal_lahir": tanggal_lahir,
             "nama": nama,
@@ -56,15 +54,20 @@ def menuRegistrasi():
         time.sleep(1)
         clearTerminal()
         menuRegistrasi()
-    print(s.registrasi(data))
+
+    result = s.registrasi(data)
+
+    print(result["antrian"])
     time.sleep(1)
     clearTerminal()
-    return data
+    return result
 
 
 def mainMenu():
     print("Registrasi Antrean Medis : \n")
     if currentUser != None:
+        print("Selamat datang, " + currentUser["nama"])
+        print("No Rekam Medis anda : " + currentUser["no_rekam_medis"])
         print(currentUser["antrian"] + "\n")
 
     print("List Menu : \n")
@@ -82,8 +85,8 @@ while True:
     menuChoice = mainMenu()
     if menuChoice == "1":
         clearTerminal()
-        currentUser = menuRegistrasi()
-        currentUser = s.get_user_object(currentUser["no_rekam_medis"])
+        result = menuRegistrasi()
+        currentUser = s.get_user_object(result["no_rekam_medis"])
         continue
 
     if menuChoice == "2":
