@@ -15,16 +15,6 @@ import queue
 
 import threading
 
-
-def set_interval(func, sec):
-    def func_wrapper():
-        set_interval(func, sec)
-        func()
-    t = threading.Timer(sec, func_wrapper)
-    t.start()
-    return t
-
-
 DATABASE = {
     "RS": {
         '1': {
@@ -54,12 +44,6 @@ DATABASE = {
 }
 
 WAKTU_ANTRIAN = 1
-
-
-def dequeueIfExist():
-    for _, value in DATABASE["RS"].items():
-        if not value["queue"].empty():
-            value["queue"].get()
 
 
 # Batasi hanya pada path /RPC2 saja supaya tidak bisa mengakses path lainnya
@@ -130,17 +114,11 @@ with SimpleXMLRPCServer(("127.0.0.1", 8000),
         else:
             return "\nERROR : User tidak ditemukan\n"
 
-    def get_list_rs():
-        rs_text = ""
-        for key, value in DATABASE["RS"].items():
-            rs_text += f"{key}. {value['nama']} \n"
-        return rs_text
 
     # register fungsi ke rpc
     server.register_function(registrasi, 'registrasi')
     server.register_function(get_queue_size, 'get_queue_size')
     server.register_function(get_detail_user, 'get_detail_user')
-    server.register_function(get_list_rs, 'get_list_rs')
     server.register_function(get_user_object, 'get_user_object')
 
     # Jalankan server
