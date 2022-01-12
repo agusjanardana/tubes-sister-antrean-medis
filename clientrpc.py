@@ -5,7 +5,7 @@ import time
 
 # buat stub (proxy) untuk client
 s = xmlrpc.client.ServerProxy(
-    'https://3e10-36-65-206-127.ngrok.io', allow_none=True)
+    'https://8561-36-65-206-127.ngrok.io', allow_none=True)
 
 
 def clearTerminal():
@@ -58,7 +58,7 @@ def menuRegistrasi():
     result = s.registrasi(data)
 
     print(result["antrian"])
-    time.sleep(1)
+    input("\nTekan Enter untuk kembali ke menu utama")
     clearTerminal()
     return result
 
